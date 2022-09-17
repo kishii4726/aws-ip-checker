@@ -63,13 +63,13 @@ to quickly create a Cobra application.`,
 		c_wafv2 := wafv2.NewFromConfig(cfg)
 		//reginal
 		resp, err := c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
-			// "CLOUDFRONT"
 			Scope: "REGIONAL",
 			Limit: aws.Int32(100),
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
+		// regional
 		for _, v := range resp.IPSets {
 			resp, err := c_wafv2.GetIPSet(context.TODO(), &wafv2.GetIPSetInput{
 				Id:    *&v.Id,
@@ -81,7 +81,34 @@ to quickly create a Cobra application.`,
 			}
 			for _, ip := range resp.IPSet.Addresses {
 				if utils.Contains(args, ip) == true {
-					table.Append([]string{"WAFv2(Reginal)", *v.Name, ip})
+					table.Append([]string{"WAFv2(Regional)", *v.Name, ip})
+				}
+			}
+		}
+
+		// cloudfront
+		us_east_1_cfg := config.UsEast1LoadConfig()
+		u_c_wafv2 := wafv2.NewFromConfig(us_east_1_cfg)
+
+		resp2, err := u_c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
+			Scope: "CLOUDFRONT",
+			Limit: aws.Int32(100),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range resp2.IPSets {
+			resp, err := u_c_wafv2.GetIPSet(context.TODO(), &wafv2.GetIPSetInput{
+				Id:    *&v.Id,
+				Name:  *&v.Name,
+				Scope: "CLOUDFRONT",
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, ip := range resp.IPSet.Addresses {
+				if utils.Contains(args, ip) == true {
+					table.Append([]string{"WAFv2(CloudFront)", *v.Name, ip})
 				}
 			}
 		}
