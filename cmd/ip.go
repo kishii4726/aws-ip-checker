@@ -9,9 +9,13 @@ import (
 	"aws-ip-checker/pkg/table"
 	"aws-ip-checker/pkg/utils"
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go-v2/service/wafv2"
 	"github.com/spf13/cobra"
 )
@@ -31,38 +35,41 @@ to quickly create a Cobra application.`,
 		cfg := config.LoadConfig()
 		table := table.SetTable()
 
-		//SecurityGroup
-		// c_ec2 := ec2.NewFromConfig(cfg)
-		// resp, err := c_ec2.DescribeSecurityGroups(context.TODO(), &ec2.DescribeSecurityGroupsInput{
-		// 	MaxResults: aws.Int32(100),
-		// })
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// for _, v := range resp.SecurityGroups {
-		// 	fmt.Println(*v.GroupName + "(" + *v.GroupId + ")")
-		// 	resp, err := c_ec2.DescribeSecurityGroupRules(context.TODO(), &ec2.DescribeSecurityGroupRulesInput{
-		// 		Filters: []types.Filter{
-		// 			{
-		// 				Name:   aws.String("group-id"),
-		// 				Values: []string{*v.GroupId},
-		// 			},
-		// 		},
-		// 	})
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
-		// 	for _, v := range resp.SecurityGroupRules {
-		// 		fmt.Println(*v.SecurityGroupRuleId)
-		// 		// fmt.Printf("%T\n", *v.GroupId)
-		// 		// fmt.Println(*v.CidrIpv4)
-		// 	}
-		// }
+		// SecurityGroup
+		c_ec2 := ec2.NewFromConfig(cfg)
+		resp, err := c_ec2.DescribeSecurityGroups(context.TODO(), &ec2.DescribeSecurityGroupsInput{
+			MaxResults: aws.Int32(100),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, s := range resp.SecurityGroups {
+			resp, err := c_ec2.DescribeSecurityGroupRules(context.TODO(), &ec2.DescribeSecurityGroupRulesInput{
+				Filters: []types.Filter{
+					{
+						Name:   aws.String("group-id"),
+						Values: []string{*s.GroupId},
+					},
+				},
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, v := range resp.SecurityGroupRules {
+				if *v.IsEgress == false {
+					if v.CidrIpv4 != nil {
+						if utils.Contains(args, *v.CidrIpv4) == true {
+							table.Append([]string{"SecurityGroup", *s.GroupName, *v.CidrIpv4})
+						}
+					}
+				}
+			}
+		}
 
 		//WAFv2
 		c_wafv2 := wafv2.NewFromConfig(cfg)
 		//reginal
-		resp, err := c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
+		resp2, err := c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
 			Scope: "REGIONAL",
 			Limit: aws.Int32(100),
 		})
@@ -70,7 +77,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 		// regional
-		for _, v := range resp.IPSets {
+		for _, v := range resp2.IPSets {
 			resp, err := c_wafv2.GetIPSet(context.TODO(), &wafv2.GetIPSetInput{
 				Id:    *&v.Id,
 				Name:  *&v.Name,
@@ -90,14 +97,14 @@ to quickly create a Cobra application.`,
 		us_east_1_cfg := config.UsEast1LoadConfig()
 		u_c_wafv2 := wafv2.NewFromConfig(us_east_1_cfg)
 
-		resp2, err := u_c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
+		resp3, err := u_c_wafv2.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
 			Scope: "CLOUDFRONT",
 			Limit: aws.Int32(100),
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, v := range resp2.IPSets {
+		for _, v := range resp3.IPSets {
 			resp, err := u_c_wafv2.GetIPSet(context.TODO(), &wafv2.GetIPSetInput{
 				Id:    *&v.Id,
 				Name:  *&v.Name,
@@ -112,6 +119,42 @@ to quickly create a Cobra application.`,
 				}
 			}
 		}
+
+		// alb
+		// c_elbv2 := elasticloadbalancingv2.NewFromConfig(cfg)
+		// resp4, err := c_elbv2.DescribeLoadBalancers(context.TODO(), &elasticloadbalancingv2.DescribeLoadBalancersInput{
+		// 	PageSize: aws.Int32(100),
+		// })
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// for _, v := range resp4.LoadBalancers {
+		// 	resp, err := c_elbv2.DescribeListeners(context.TODO(), &elasticloadbalancingv2.DescribeListenersInput{
+		// 		LoadBalancerArn: &*v.LoadBalancerArn,
+		// 	})
+		// 	if err != nil {
+		// 		log.Fatal(err)
+		// 	}
+		// 	fmt.Println(*v.LoadBalancerName)
+		// 	for _, v := range resp.Listeners {
+		// 		fmt.Println(*v.ListenerArn)
+		// 		respx, err := c_elbv2.DescribeRules(context.TODO(), &elasticloadbalancingv2.DescribeRulesInput{
+		// 			ListenerArn: v.ListenerArn,
+		// 		})
+		// 		if err != nil {
+		// 			log.Fatal(err)
+		// 		}
+		// 		for _, v := range respx.Rules {
+		// 			for _, v := range v.Conditions {
+		// 				fmt.Println(*v.SourceIpConfig)
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// accountid
+		sts := sts.NewFromConfig(cfg)
+		resp5, err := sts.GetCallerIdentity(context.TODO(), nil)
+		fmt.Println("AccountId: " + *resp5.Account)
 		table.Render()
 	},
 }
