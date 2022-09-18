@@ -9,7 +9,7 @@ import (
 func SetTable() *tablewriter.Table {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Service", "RESOURCE", "IP"})
+	table.SetHeader([]string{"Service", "DETAIL", "RESOURCE", "IP"})
 
 	return table
 }
