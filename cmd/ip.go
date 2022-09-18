@@ -5,7 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"aws-ip-checker/pkg/config"
+	"aws-ip-checker/pkg/aws/config"
 	"aws-ip-checker/pkg/table"
 	"aws-ip-checker/pkg/utils"
 	"context"
