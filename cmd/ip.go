@@ -18,6 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go-v2/service/waf"
+	"github.com/aws/aws-sdk-go-v2/service/wafregional"
 	"github.com/aws/aws-sdk-go-v2/service/wafv2"
 	"github.com/spf13/cobra"
 )
@@ -121,6 +123,51 @@ to quickly create a Cobra application.`,
 			for _, ip := range resp.IPSet.Addresses {
 				if utils.Contains(args, ip) == true {
 					table.Append([]string{"WAFv2", "IPSet, CloudFront", *v.Name, ip})
+				}
+			}
+		}
+
+		// WAFv1
+		// region
+		c_wafv1_r := wafregional.NewFromConfig(cfg)
+		respb, err := c_wafv1_r.ListIPSets(context.TODO(), &wafregional.ListIPSetsInput{
+			Limit: 100,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range respb.IPSets {
+			resp, err := c_wafv1_r.GetIPSet(context.TODO(), &wafregional.GetIPSetInput{
+				IPSetId: *&v.IPSetId,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, ip := range resp.IPSet.IPSetDescriptors {
+				if utils.Contains(args, *ip.Value) == true {
+					table.Append([]string{"WAF Classic", "IPSet, Regional", *v.Name, *ip.Value})
+				}
+			}
+		}
+
+		// cloudfront
+		c_wafv1 := waf.NewFromConfig(cfg)
+		respa, err := c_wafv1.ListIPSets(context.TODO(), &waf.ListIPSetsInput{
+			Limit: 100,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range respa.IPSets {
+			resp, err := c_wafv1.GetIPSet(context.TODO(), &waf.GetIPSetInput{
+				IPSetId: *&v.IPSetId,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, ip := range resp.IPSet.IPSetDescriptors {
+				if utils.Contains(args, *ip.Value) == true {
+					table.Append([]string{"WAF Classic", "IPSet, CloudFront", *v.Name, *ip.Value})
 				}
 			}
 		}
