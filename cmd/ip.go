@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"aws-ip-checker/pkg/aws/config"
+	_ "aws-ip-checker/pkg/aws/service/ec2"
 	"aws-ip-checker/pkg/table"
 	"aws-ip-checker/pkg/utils"
 	"context"
