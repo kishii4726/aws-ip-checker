@@ -11,10 +11,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go-v2/service/wafv2"
 	"github.com/spf13/cobra"
@@ -55,12 +57,15 @@ to quickly create a Cobra application.`,
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			var direction string = "Ingress"
 			for _, v := range resp.SecurityGroupRules {
-				if *v.IsEgress == false {
-					if v.CidrIpv4 != nil {
-						if utils.Contains(args, *v.CidrIpv4) == true {
-							table.Append([]string{"SecurityGroup", *s.GroupName, *v.CidrIpv4})
-						}
+				if v.CidrIpv4 != nil {
+					if *v.IsEgress {
+						direction = "Egress"
+					}
+					if utils.Contains(args, *v.CidrIpv4) == true {
+						table.Append([]string{"SecurityGroup", direction, *s.GroupName, *v.CidrIpv4})
 					}
 				}
 			}
@@ -88,7 +93,7 @@ to quickly create a Cobra application.`,
 			}
 			for _, ip := range resp.IPSet.Addresses {
 				if utils.Contains(args, ip) == true {
-					table.Append([]string{"WAFv2(Regional)", *v.Name, ip})
+					table.Append([]string{"WAFv2", "IPSet, Regional", *v.Name, ip})
 				}
 			}
 		}
@@ -115,42 +120,46 @@ to quickly create a Cobra application.`,
 			}
 			for _, ip := range resp.IPSet.Addresses {
 				if utils.Contains(args, ip) == true {
-					table.Append([]string{"WAFv2(CloudFront)", *v.Name, ip})
+					table.Append([]string{"WAFv2", "IPSet, CloudFront", *v.Name, ip})
 				}
 			}
 		}
 
 		// alb
-		// c_elbv2 := elasticloadbalancingv2.NewFromConfig(cfg)
-		// resp4, err := c_elbv2.DescribeLoadBalancers(context.TODO(), &elasticloadbalancingv2.DescribeLoadBalancersInput{
-		// 	PageSize: aws.Int32(100),
-		// })
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// for _, v := range resp4.LoadBalancers {
-		// 	resp, err := c_elbv2.DescribeListeners(context.TODO(), &elasticloadbalancingv2.DescribeListenersInput{
-		// 		LoadBalancerArn: &*v.LoadBalancerArn,
-		// 	})
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
-		// 	fmt.Println(*v.LoadBalancerName)
-		// 	for _, v := range resp.Listeners {
-		// 		fmt.Println(*v.ListenerArn)
-		// 		respx, err := c_elbv2.DescribeRules(context.TODO(), &elasticloadbalancingv2.DescribeRulesInput{
-		// 			ListenerArn: v.ListenerArn,
-		// 		})
-		// 		if err != nil {
-		// 			log.Fatal(err)
-		// 		}
-		// 		for _, v := range respx.Rules {
-		// 			for _, v := range v.Conditions {
-		// 				fmt.Println(*v.SourceIpConfig)
-		// 			}
-		// 		}
-		// 	}
-		// }
+		c_elbv2 := elasticloadbalancingv2.NewFromConfig(cfg)
+		resp4, err := c_elbv2.DescribeLoadBalancers(context.TODO(), &elasticloadbalancingv2.DescribeLoadBalancersInput{
+			PageSize: aws.Int32(100),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, lb := range resp4.LoadBalancers {
+			resp, err := c_elbv2.DescribeListeners(context.TODO(), &elasticloadbalancingv2.DescribeListenersInput{
+				LoadBalancerArn: &*lb.LoadBalancerArn,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, li := range resp.Listeners {
+				respx, err := c_elbv2.DescribeRules(context.TODO(), &elasticloadbalancingv2.DescribeRulesInput{
+					ListenerArn: li.ListenerArn,
+				})
+				if err != nil {
+					log.Fatal(err)
+				}
+				for _, v := range respx.Rules {
+					for _, v := range v.Conditions {
+						if v.SourceIpConfig != nil {
+							for _, v := range *&v.SourceIpConfig.Values {
+								if utils.Contains(args, v) == true {
+									table.Append([]string{"ALB", "Listener, " + "Port: " + strconv.Itoa(int(*li.Port)), *lb.LoadBalancerName, v})
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		// accountid
 		sts := sts.NewFromConfig(cfg)
 		resp5, err := sts.GetCallerIdentity(context.TODO(), nil)
