@@ -44,7 +44,7 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// SecurityGroup
 		for _, s := range serviceec2.GetSecurityGroupIds(c_ec2) {
 			for _, i := range serviceec2.CheckContainIpAddress(c_ec2, serviceec2.GetSecurityGroupRules(c_ec2, s[0]), args) {
-				table.Append([]string{"SecurityGroup", i[0], s[1], s[0], i[1]})
+				table.Append([]string{"SecurityGroup", i[0] + ", Port: " + i[2] + " - " + i[3], s[1], s[0], i[1]})
 			}
 		}
 
@@ -88,7 +88,8 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// accountid
 		sts := sts.NewFromConfig(cfg)
 		fmt.Println("AccountId: " + *servicests.GetAccountId(sts))
-
+		table.SetRowLine(true)
+		table.SetAutoMergeCellsByColumnIndex([]int{2, 3})
 		table.Render()
 	},
 }
