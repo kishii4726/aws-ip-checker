@@ -26,10 +26,13 @@ jobs:
           mkdir -p artifacts
           GOOS=linux GOARCH=amd64 go build -o aws-ip-checker
           zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_linux_amd64.zip aws-ip-checker
+          mv aws-ip-checker_v${{ github.event.inputs.release_tag }}_linux_amd64.zip artifacts
           GOOS=darwin GOARCH=amd64 go build -o aws-ip-checker
           zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_amd64.zip aws-ip-checker
+          mv aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_amd64.zip artifacts
           GOOS=darwin GOARCH=arm64 go build -o aws-ip-checker
           zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_arm64.zip aws-ip-checker
+          mv aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_arm64.zip artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
