@@ -4,6 +4,7 @@ import (
 	"aws-ip-checker/pkg/utils"
 	"context"
 	"log"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -70,7 +71,7 @@ func CheckContainIpAddress(client *ec2.Client, security_group_rules *ec2.Describ
 				direction = "Ingress"
 			}
 			if utils.Contains(ipaddresses, *v.CidrIpv4) == true {
-				d = append(d, []string{direction, *v.CidrIpv4})
+				d = append(d, []string{direction, *v.CidrIpv4, strconv.Itoa(int(*v.FromPort)), strconv.Itoa(int(*v.ToPort))})
 			}
 		}
 	}
