@@ -6,6 +6,25 @@ This tool checks whether IP addresses are set for the following AWS resources.
 - ApplicationLoadBlancer ListenerRule
 
 ## Install
+### Mac
+```
+$ AWS_IP_CHECKER_VERSION=0.0.1
+$ curl -OL https://github.com/kishii4726/aws-ip-checker/releases/download/v${AWS_IP_CHECKER_VERSION}/aws-ip-checker_v${AWS_IP_CHECKER_VERSION}_darwin_amd64.zip
+
+$ unzip aws-ip-checker_v${AWS_IP_CHECKER_VERSION}_darwin_amd64.zip aws-ip-checker
+
+$ sudo cp aws-ip-checker /usr/local/bin
+```
+
+### Linux
+```
+$ AWS_IP_CHECKER_VERSION=0.0.1
+$ curl -OL https://github.com/kishii4726/aws-ip-checker/releases/download/v${AWS_IP_CHECKER_VERSION}/aws-ip-checker_v${AWS_IP_CHECKER_VERSION}_linux_amd64.zip
+
+$ unzip aws-ip-checker_v${AWS_IP_CHECKER_VERSION}_linux_amd64.zip aws-ip-checker
+
+$ sudo cp aws-ip-checker /usr/local/bin
+```
 
 ## Usage
 
