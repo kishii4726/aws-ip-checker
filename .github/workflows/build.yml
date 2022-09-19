@@ -6,7 +6,7 @@ on:
       release_tag:
         type: string
         required: true
-        description: "e.g. v0.0.1"
+        description: "e.g. 0.0.1"
 
 
 jobs:
@@ -25,11 +25,11 @@ jobs:
         run: |
           mkdir -p artifacts
           GOOS=linux GOARCH=amd64 go build -o aws-ip-checker
-          unzip aws-ip-checker_v${{ github.event.inputs.release_tag }}_linux_amd64.zip aws-ip-checker
+          zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_linux_amd64.zip aws-ip-checker
           GOOS=darwin GOARCH=amd64 go build -o aws-ip-checker
-          unzip aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_amd64.zip aws-ip-checker
+          zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_amd64.zip aws-ip-checker
           GOOS=darwin GOARCH=arm64 go build -o aws-ip-checker
-          unzip aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_arm64.zip aws-ip-checker
+          zip -r aws-ip-checker_v${{ github.event.inputs.release_tag }}_darwin_arm64.zip aws-ip-checker
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
