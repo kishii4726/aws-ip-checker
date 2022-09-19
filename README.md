@@ -1,5 +1,5 @@
 # aws-ip-checker
-This tool checks whether IP addresses are set for the following AWS resources
+This tool checks whether IP addresses are set for the following AWS resources.
 - SecurityGroup Ingress/Egress
 - WAF v2 IPSet
 - WAF Classic IPSet
