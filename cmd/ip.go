@@ -45,7 +45,7 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// SecurityGroup
 		for _, s := range serviceec2.GetSecurityGroupIds(c_ec2) {
 			for _, i := range serviceec2.CheckContainIpAddress(c_ec2, serviceec2.GetSecurityGroupRules(c_ec2, s[0]), args) {
-				table.Append([]string{"SecurityGroup", i[0], s[1] + "(" + s[0] + ")", i[1]})
+				table.Append([]string{"SecurityGroup", i[0], s[1], s[0], i[1]})
 			}
 		}
 
@@ -53,13 +53,13 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// Regional
 		for _, v := range servicewaf.V2GetIpSets(c_wafv2, "REGIONAL").IPSets {
 			for _, w := range servicewaf.V2CheckContainIpAddress(c_wafv2, *&v.Id, *&v.Name, "REGIONAL", args) {
-				table.Append([]string{"WAF v2", "IPSet, Regional", w[0], w[1]})
+				table.Append([]string{"WAF v2", "IPSet, Regional", w[0], *v.Id, w[1]})
 			}
 		}
 		// Cloudfront
 		for _, v := range servicewaf.V2GetIpSets(u_c_wafv2, "CLOUDFRONT").IPSets {
 			for _, w := range servicewaf.V2CheckContainIpAddress(u_c_wafv2, *&v.Id, *&v.Name, "CLOUDFRONT", args) {
-				table.Append([]string{"WAF v2", "IPSet, CloudFront", w[0], w[1]})
+				table.Append([]string{"WAF v2", "IPSet, CloudFront", w[0], *v.Id, w[1]})
 			}
 		}
 
@@ -67,13 +67,13 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// Regional
 		for _, v := range servicewaf.V1RegionalGetIpSets(c_wafv1_r).IPSets {
 			for _, w := range servicewaf.V1RegionalCheckContainIpAddress(c_wafv1_r, *&v.IPSetId, *&v.Name, args) {
-				table.Append([]string{"WAF Classic", "IPSet, Regional", w[0], w[1]})
+				table.Append([]string{"WAF Classic", "IPSet, Regional", w[0], *v.IPSetId, w[1]})
 			}
 		}
 		// Cloudfront
 		for _, v := range servicewaf.V1CloudFrontGetIpSets(c_wafv1_c).IPSets {
 			for _, w := range servicewaf.V1CloudFrontCheckContainIpAddress(c_wafv1_c, *&v.IPSetId, *&v.Name, args) {
-				table.Append([]string{"WAF Classic", "IPSet, CloudFront", w[0], w[1]})
+				table.Append([]string{"WAF Classic", "IPSet, CloudFront", w[0], *v.IPSetId, w[1]})
 			}
 		}
 
@@ -81,7 +81,7 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		for _, lb := range servicealb.GetLoadBalancers(c_elbv2).LoadBalancers {
 			for _, li := range servicealb.DescribeLoadBalancerListeners(c_elbv2, lb.LoadBalancerArn).Listeners {
 				for _, i := range servicealb.CheckContainIpAddress(c_elbv2, li.ListenerArn, args) {
-					table.Append([]string{"ALB", "Listener, Port: " + strconv.Itoa(int(*li.Port)), *lb.LoadBalancerName, i})
+					table.Append([]string{"ALB", "Listener, Port: " + strconv.Itoa(int(*li.Port)), *lb.LoadBalancerName, *li.ListenerArn, i})
 				}
 			}
 		}
