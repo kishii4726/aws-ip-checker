@@ -9,26 +9,52 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/wafregional"
 )
 
-func V1RegionalGetIpSets(client *wafregional.Client) *wafregional.ListIPSetsOutput {
-	resp, err := client.ListIPSets(context.TODO(), &wafregional.ListIPSetsInput{
+func V1RegionalGetIpSets(client *wafregional.Client) [][]string {
+	var d [][]string
+	req_params := &wafregional.ListIPSetsInput{
 		Limit: 100,
-	})
-	if err != nil {
-		log.Fatal(err)
 	}
 
-	return resp
+	for {
+		resp, err := client.ListIPSets(context.TODO(), req_params)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range resp.IPSets {
+			d = append(d, []string{*v.IPSetId, *v.Name})
+		}
+		if resp.NextMarker != nil {
+			req_params.NextMarker = resp.NextMarker
+		} else {
+			break
+		}
+	}
+
+	return d
 }
 
-func V1CloudFrontGetIpSets(client *waf.Client) *waf.ListIPSetsOutput {
-	resp, err := client.ListIPSets(context.TODO(), &waf.ListIPSetsInput{
+func V1CloudFrontGetIpSets(client *waf.Client) [][]string {
+	var d [][]string
+	req_params := &waf.ListIPSetsInput{
 		Limit: 100,
-	})
-	if err != nil {
-		log.Fatal(err)
 	}
 
-	return resp
+	for {
+		resp, err := client.ListIPSets(context.TODO(), req_params)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range resp.IPSets {
+			d = append(d, []string{*v.IPSetId, *v.Name})
+		}
+		if resp.NextMarker != nil {
+			req_params.NextMarker = resp.NextMarker
+		} else {
+			break
+		}
+	}
+
+	return d
 }
 
 func V1RegionalCheckContainIpAddress(client *wafregional.Client, id *string, name *string, ipaddresses []string) [][]string {

@@ -13,28 +13,45 @@ import (
 func GetSecurityGroupIds(client *ec2.Client) [][]string {
 	var d [][]string
 
-	resp, err := client.DescribeSecurityGroups(context.TODO(), &ec2.DescribeSecurityGroupsInput{
+	req_params := &ec2.DescribeSecurityGroupsInput{
 		MaxResults: aws.Int32(100),
-	})
-	if err != nil {
-		log.Fatal(err)
+		NextToken:  aws.String(""),
 	}
-	for _, s := range resp.SecurityGroups {
-		d = append(d, []string{*s.GroupId, *s.GroupName})
+
+	for {
+		resp, err := client.DescribeSecurityGroups(context.TODO(), req_params)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(resp.SecurityGroups) == 0 {
+			log.Println("SecurityGroup does not exist.")
+			break
+		}
+		for _, v := range resp.SecurityGroups {
+			d = append(d, []string{*v.GroupId, *v.GroupName})
+		}
+		if resp.NextToken != nil {
+			req_params.NextToken = resp.NextToken
+		} else {
+			break
+		}
 	}
 
 	return d
 }
 
 func GetSecurityGroupRules(client *ec2.Client, security_group_id string) *ec2.DescribeSecurityGroupRulesOutput {
-	resp, err := client.DescribeSecurityGroupRules(context.TODO(), &ec2.DescribeSecurityGroupRulesInput{
+	req_params := &ec2.DescribeSecurityGroupRulesInput{
 		Filters: []types.Filter{
 			{
 				Name:   aws.String("group-id"),
 				Values: []string{security_group_id},
 			},
 		},
-	})
+		MaxResults: aws.Int32(100),
+	}
+
+	resp, err := client.DescribeSecurityGroupRules(context.TODO(), req_params)
 	if err != nil {
 		log.Fatal(err)
 	}

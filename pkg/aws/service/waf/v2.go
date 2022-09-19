@@ -10,16 +10,29 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/wafv2/types"
 )
 
-func V2GetIpSets(client *wafv2.Client, scope types.Scope) *wafv2.ListIPSetsOutput {
-	resp, err := client.ListIPSets(context.TODO(), &wafv2.ListIPSetsInput{
+func V2GetIpSets(client *wafv2.Client, scope types.Scope) [][]string {
+	var d [][]string
+	req_params := &wafv2.ListIPSetsInput{
 		Scope: scope,
 		Limit: aws.Int32(100),
-	})
-	if err != nil {
-		log.Fatal(err)
 	}
 
-	return resp
+	for {
+		resp, err := client.ListIPSets(context.TODO(), req_params)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, v := range resp.IPSets {
+			d = append(d, []string{*v.Id, *v.Name})
+		}
+		if resp.NextMarker != nil {
+			req_params.NextMarker = resp.NextMarker
+		} else {
+			break
+		}
+	}
+
+	return d
 }
 
 func V2CheckContainIpAddress(client *wafv2.Client, id *string, name *string, scope types.Scope, ipaddresses []string) [][]string {

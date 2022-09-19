@@ -8,7 +8,6 @@ import (
 	servicewaf "aws-ip-checker/pkg/aws/service/waf"
 	"aws-ip-checker/pkg/table"
 	"fmt"
-	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -51,37 +50,37 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 
 		// WAFv2
 		// Regional
-		for _, v := range servicewaf.V2GetIpSets(c_wafv2, "REGIONAL").IPSets {
-			for _, w := range servicewaf.V2CheckContainIpAddress(c_wafv2, *&v.Id, *&v.Name, "REGIONAL", args) {
-				table.Append([]string{"WAF v2", "IPSet, Regional", w[0], *v.Id, w[1]})
+		for _, v := range servicewaf.V2GetIpSets(c_wafv2, "REGIONAL") {
+			for _, w := range servicewaf.V2CheckContainIpAddress(c_wafv2, &v[0], &v[1], "REGIONAL", args) {
+				table.Append([]string{"WAF v2", "IPSet, Regional", w[0], v[0], w[1]})
 			}
 		}
 		// Cloudfront
-		for _, v := range servicewaf.V2GetIpSets(u_c_wafv2, "CLOUDFRONT").IPSets {
-			for _, w := range servicewaf.V2CheckContainIpAddress(u_c_wafv2, *&v.Id, *&v.Name, "CLOUDFRONT", args) {
-				table.Append([]string{"WAF v2", "IPSet, CloudFront", w[0], *v.Id, w[1]})
+		for _, v := range servicewaf.V2GetIpSets(u_c_wafv2, "CLOUDFRONT") {
+			for _, w := range servicewaf.V2CheckContainIpAddress(u_c_wafv2, &v[0], &v[1], "CLOUDFRONT", args) {
+				table.Append([]string{"WAF v2", "IPSet, CloudFront", w[0], v[0], w[1]})
 			}
 		}
 
 		// WAFv1
 		// Regional
-		for _, v := range servicewaf.V1RegionalGetIpSets(c_wafv1_r).IPSets {
-			for _, w := range servicewaf.V1RegionalCheckContainIpAddress(c_wafv1_r, *&v.IPSetId, *&v.Name, args) {
-				table.Append([]string{"WAF Classic", "IPSet, Regional", w[0], *v.IPSetId, w[1]})
+		for _, v := range servicewaf.V1RegionalGetIpSets(c_wafv1_r) {
+			for _, w := range servicewaf.V1RegionalCheckContainIpAddress(c_wafv1_r, &v[0], &v[1], args) {
+				table.Append([]string{"WAF Classic", "IPSet, Regional", w[0], v[0], w[1]})
 			}
 		}
 		// Cloudfront
-		for _, v := range servicewaf.V1CloudFrontGetIpSets(c_wafv1_c).IPSets {
-			for _, w := range servicewaf.V1CloudFrontCheckContainIpAddress(c_wafv1_c, *&v.IPSetId, *&v.Name, args) {
-				table.Append([]string{"WAF Classic", "IPSet, CloudFront", w[0], *v.IPSetId, w[1]})
+		for _, v := range servicewaf.V1CloudFrontGetIpSets(c_wafv1_c) {
+			for _, w := range servicewaf.V1CloudFrontCheckContainIpAddress(c_wafv1_c, &v[0], &v[1], args) {
+				table.Append([]string{"WAF Classic", "IPSet, CloudFront", w[0], v[0], w[1]})
 			}
 		}
 
 		// alb
-		for _, lb := range servicealb.GetLoadBalancers(c_elbv2).LoadBalancers {
-			for _, li := range servicealb.DescribeLoadBalancerListeners(c_elbv2, lb.LoadBalancerArn).Listeners {
-				for _, i := range servicealb.CheckContainIpAddress(c_elbv2, li.ListenerArn, args) {
-					table.Append([]string{"ALB", "Listener, Port: " + strconv.Itoa(int(*li.Port)), *lb.LoadBalancerName, *li.ListenerArn, i})
+		for _, lb := range servicealb.GetLoadBalancers(c_elbv2) {
+			for _, li := range servicealb.DescribeLoadBalancerListeners(c_elbv2, &lb[1]) {
+				for _, i := range servicealb.CheckContainIpAddress(c_elbv2, &li[0], args) {
+					table.Append([]string{"ALB", "Listener, Port: " + li[1], lb[0], li[0], i})
 				}
 			}
 		}
