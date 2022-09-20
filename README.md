@@ -40,11 +40,11 @@ $ sudo cp aws-ip-checker /usr/local/bin
 
 ### Specify IP address as argument
 ```
-$ aws-ip-checker xxx.xxx.xxx.xxx/xx
+$ aws-ip-checker ip xxx.xxx.xxx.xxx/xx
 ```
 
 ```
-$ aws-ip-checker 0.0.0.0/0 111.111.111.111/32 222.222.222.222/32
+$ aws-ip-checker file 0.0.0.0/0 111.111.111.111/32 222.222.222.222/32
 
 AccountId: xxxxxxxxxxxx
 +---------------+----------------------------+--------------------------+------------------------------------------------------------------------------------------------------------------+--------------------+
