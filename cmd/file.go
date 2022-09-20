@@ -92,7 +92,7 @@ e.g. sample.csv`,
 		fmt.Println("AccountId: " + *servicests.GetAccountId(sts))
 
 		table.SetRowLine(true)
-		table.SetAutoMergeCellsByColumnIndex([]int{1, 2, 3})
+		table.SetAutoMergeCellsByColumnIndex([]int{2, 3})
 		table.Render()
 	},
 }
