@@ -88,6 +88,7 @@ e.g. 192.168.0.0/32 192.168.0.0/24`,
 		// accountid
 		sts := sts.NewFromConfig(cfg)
 		fmt.Println("AccountId: " + *servicests.GetAccountId(sts))
+
 		table.SetRowLine(true)
 		table.SetAutoMergeCellsByColumnIndex([]int{2, 3})
 		table.Render()

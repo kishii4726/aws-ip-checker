@@ -91,6 +91,8 @@ e.g. sample.csv`,
 		sts := sts.NewFromConfig(cfg)
 		fmt.Println("AccountId: " + *servicests.GetAccountId(sts))
 
+		table.SetRowLine(true)
+		table.SetAutoMergeCellsByColumnIndex([]int{2, 3})
 		table.Render()
 	},
 }
